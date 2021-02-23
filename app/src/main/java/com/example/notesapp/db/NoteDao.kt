@@ -1,7 +1,6 @@
 package com.example.notesapp.db
 
 import androidx.room.*
-import javax.sql.DataSource
 
 @Dao
 interface NoteDao {
@@ -14,7 +13,7 @@ interface NoteDao {
 
 
     @Query("SELECT Note.id,Note.title,Note.city,Note.note,City.zip FROM NOTE left Outer join City on Note.city=City.city ")
-    suspend fun getAllNotesPaged():DataSource.Fac
+    suspend fun getAllNotesPaged():List<NoteAndCity?>?
 
     @Insert
     suspend fun addMultipleNotes(vararg note: Note)
