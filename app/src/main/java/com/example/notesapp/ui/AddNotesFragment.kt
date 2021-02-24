@@ -8,14 +8,19 @@ import androidx.fragment.app.Fragment
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import com.example.notesapp.R
 import com.example.notesapp.databinding.FragmentAddNotesBinding
+import com.example.notesapp.db.CityDao
 import com.example.notesapp.db.Note
 import com.example.notesapp.db.NoteDatabase
+import com.example.notesapp.viewmodel.NoteViewModel
+import com.example.notesapp.viewmodel.NoteViewModelFactory
 import kotlinx.coroutines.launch
 
 private lateinit var binding: FragmentAddNotesBinding
+private lateinit var viewModel: NoteViewModel
 
 class AddNotesFragment : BaseFragment() {
 
@@ -41,6 +46,19 @@ class AddNotesFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+
+        val application = requireActivity().application
+
+        val dataSource = NoteDatabase.getInstance(application).getNoteDao()
+
+        val noteViewModelFactory =
+            NoteViewModelFactory(
+                dataSource, application
+            )
+
+        viewModel =
+            ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
 
         //Update saved items
         arguments?.let {
@@ -76,12 +94,14 @@ class AddNotesFragment : BaseFragment() {
                     val mNote= Note(noteTitle,noteBody,noteCity)
 
                     if(note==null){
-                        NoteDatabase(it).getNoteDao().addNote(mNote)
+//                        NoteDatabase(it).getNoteDao().addNote(mNote)
+                        viewModel.addNote(mNote)
                         it.toast("Note Saved")
                     }
                     else{
                         mNote.id=note!!.id
-                        NoteDatabase(it).getNoteDao().updateNote(mNote)
+//                        NoteDatabase(it).getNoteDao().updateNote(mNote)
+                        viewModel.updateNote(mNote)
                         it.toast("Note Updated")
                     }
 
@@ -112,7 +132,7 @@ class AddNotesFragment : BaseFragment() {
             setMessage("You cannot undo this operation once deleted!")
             setPositiveButton("Yes"){_,_->
                 launch {
-                    NoteDatabase(context).getNoteDao().deleteNote(note!!)
+//                    NoteDatabase(context).getNoteDao().deleteNote(note!!)
                     //move to Home
                     val action=AddNotesFragmentDirections.actionSaveNotes()
                     Navigation.findNavController(requireView()).navigate(action)

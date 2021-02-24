@@ -8,6 +8,5 @@ import androidx.room.Query
 interface CityDao {
 
     @Insert
-    fun addCity(city: City)
-
+    fun addCity(data: List<City>)
 }

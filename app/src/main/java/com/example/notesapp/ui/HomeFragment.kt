@@ -7,15 +7,21 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.notesapp.R
 import com.example.notesapp.databinding.FragmentHomeBinding
 import com.example.notesapp.db.NoteAndCity
 import com.example.notesapp.db.NoteDatabase
+import com.example.notesapp.viewmodel.NoteViewModel
+import com.example.notesapp.viewmodel.NoteViewModelFactory
 import kotlinx.coroutines.launch
 
 private lateinit var binding:FragmentHomeBinding
+private lateinit var viewModel: NoteViewModel
 
 class HomeFragment : BaseFragment() {
 
@@ -42,10 +48,23 @@ class HomeFragment : BaseFragment() {
         binding.recyclerViewNotes.setHasFixedSize(true)
         binding.recyclerViewNotes.layoutManager=StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL)
 
+        val application = requireActivity().application
+
+        val dataSource = NoteDatabase.getInstance(application).getNoteDao()
+
+        val noteViewModelFactory =
+            NoteViewModelFactory(
+                dataSource, application
+            )
+
+        viewModel =
+            ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
+
         launch {
 
             context?.let {
-                val notes=NoteDatabase(it).getNoteDao().getAllNotes()
+//                val notes=NoteDatabase(it).getNoteDao().getAllNotes()
+                val notes= viewModel.getAllNotes()
 
                 //set adapter
                 if(!notes.isNullOrEmpty())
@@ -57,6 +76,5 @@ class HomeFragment : BaseFragment() {
             val action=HomeFragmentDirections.actionAddNote()
             Navigation.findNavController(it).navigate(action)
         })
-
     }
 }
