@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import com.example.notesapp.R
 import com.example.notesapp.databinding.FragmentAddNotesBinding
@@ -88,7 +89,7 @@ class AddNotesFragment : BaseFragment() {
 
             //using kotlin coroutines
 
-            launch {
+            lifecycleScope.launch {
 
                 context?.let {
                     val mNote= Note(noteTitle,noteBody,noteCity)
