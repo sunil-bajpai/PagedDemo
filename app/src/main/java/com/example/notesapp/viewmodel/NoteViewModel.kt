@@ -2,26 +2,43 @@ package com.example.notesapp.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.notesapp.db.City
 import com.example.notesapp.db.Note
 import com.example.notesapp.db.NoteAndCity
 import com.example.notesapp.db.NoteDao
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
-class NoteViewModel(val NoteDao:NoteDao,application: Application) : AndroidViewModel(application) {
+class NoteViewModel(val database:NoteDao,application: Application) : AndroidViewModel(application) {
 
-    suspend fun addNote(note: Note){
-        NoteDao.addNote(note)
-    }
+            // Coroutine that will be canceled when the ViewModel is cleared.
+    var result:List<NoteAndCity?>?=null
 
-    suspend fun getAllNotes():List<NoteAndCity?>?{
-        return  NoteDao.getAllNotes()
-    }
+            fun addNote(note: Note) {
+                viewModelScope.launch {
+                    database.addNote(note)
+                }
+            }
 
-    suspend fun updateNote(note: Note){
-        NoteDao.updateNote(note)
-    }
+            fun getAllNotes() {
+                viewModelScope.launch {
+                    result=database.getAllNotes()
+                }
+            }
 
-    suspend fun deleteNote(note: Note){
-        NoteDao.deleteNote(note)
+            fun updateNote(note: Note) {
+                viewModelScope.launch {
+                    database.updateNote(note)
+                }
+            }
+
+            fun deleteNote(note: Note) {
+                viewModelScope.launch {
+                    database.deleteNote(note)
+                }
+
     }
 }

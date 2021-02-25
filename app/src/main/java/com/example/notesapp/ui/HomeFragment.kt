@@ -1,6 +1,7 @@
 package com.example.notesapp.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.notesapp.R
@@ -18,7 +20,11 @@ import com.example.notesapp.db.NoteAndCity
 import com.example.notesapp.db.NoteDatabase
 import com.example.notesapp.viewmodel.NoteViewModel
 import com.example.notesapp.viewmodel.NoteViewModelFactory
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private lateinit var binding:FragmentHomeBinding
 private lateinit var viewModel: NoteViewModel
@@ -60,21 +66,26 @@ class HomeFragment : BaseFragment() {
         viewModel =
             ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
 
-        launch {
+        lifecycleScope.launchWhenStarted {
+            withContext(Dispatchers.Main) {
 
-            context?.let {
-//                val notes=NoteDatabase(it).getNoteDao().getAllNotes()
-                val notes= viewModel.getAllNotes()
+                viewModel.getAllNotes()
+                delay(500)
 
-                //set adapter
-                if(!notes.isNullOrEmpty())
-                    binding.recyclerViewNotes.adapter=NotesAdapter(notes as List<NoteAndCity>)
+                val notes= viewModel.result
+
+//              val notes=NoteDatabase(it).getNoteDao().getAllNotes()
+//              set adapter
+                if(!notes.isNullOrEmpty()) {
+                    binding.recyclerViewNotes.adapter = NotesAdapter(notes as List<NoteAndCity>)
+                }
+
+                binding.add.setOnClickListener(View.OnClickListener {
+
+                val action=HomeFragmentDirections.actionAddNote()
+                Navigation.findNavController(it).navigate(action)
+                })
             }
         }
-        binding.add.setOnClickListener(View.OnClickListener {
-
-            val action=HomeFragmentDirections.actionAddNote()
-            Navigation.findNavController(it).navigate(action)
-        })
     }
 }
