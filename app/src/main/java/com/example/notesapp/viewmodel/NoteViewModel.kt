@@ -9,19 +9,19 @@ import com.example.notesapp.db.NoteDao
 
 class NoteViewModel(val NoteDao:NoteDao,application: Application) : AndroidViewModel(application) {
 
-    fun addNote(note: Note){
+    suspend fun addNote(note: Note){
         NoteDao.addNote(note)
     }
 
-    fun getAllNotes():List<NoteAndCity?>?{
+    suspend fun getAllNotes():List<NoteAndCity?>?{
         return  NoteDao.getAllNotes()
     }
 
-    fun updateNote(note: Note){
+    suspend fun updateNote(note: Note){
         NoteDao.updateNote(note)
     }
 
-    fun deleteNote(note: Note){
+    suspend fun deleteNote(note: Note){
         NoteDao.deleteNote(note)
     }
 }
