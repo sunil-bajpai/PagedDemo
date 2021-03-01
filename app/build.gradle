@@ -34,6 +34,8 @@ android {
     }
     buildFeatures{
         dataBinding true
+//        paging
+        viewBinding true
     }
 }
 

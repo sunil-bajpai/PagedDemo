@@ -21,10 +21,8 @@ import com.example.notesapp.db.NoteDatabase
 import com.example.notesapp.viewmodel.NoteViewModel
 import com.example.notesapp.viewmodel.NoteViewModelFactory
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 
 private lateinit var binding:FragmentHomeBinding
 private lateinit var viewModel: NoteViewModel
@@ -49,6 +47,7 @@ class HomeFragment : BaseFragment() {
 
     }
 
+    @InternalCoroutinesApi
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         binding.recyclerViewNotes.setHasFixedSize(true)
@@ -66,26 +65,43 @@ class HomeFragment : BaseFragment() {
         viewModel =
             ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
 
+        viewModel.getAllNotes()
         lifecycleScope.launchWhenStarted {
             withContext(Dispatchers.Main) {
 
-                viewModel.getAllNotes()
-                delay(500)
+                viewModel.databaseResponse.collect()
+                {
+                    when(it){
+                        is NoteViewModel.ResponseState.Success -> {
+                            Snackbar.make(binding.root, "Success", Snackbar.LENGTH_LONG).show()
+                            binding.recyclerViewNotes.adapter = NotesAdapter(it.data)
+                        }
+                        is NoteViewModel.ResponseState.Error -> {
+                            Snackbar.make(binding.root, "Error", Snackbar.LENGTH_LONG).show()
+                        }
+                        is NoteViewModel.ResponseState.Loading -> {
+                            Snackbar.make(binding.root, "Loading", Snackbar.LENGTH_LONG).show()
+                        }
+                    }
+                }
 
-                val notes= viewModel.result
+//                viewModel.getAllNotes()
+//                val notes= viewModel.result
 
 //              val notes=NoteDatabase(it).getNoteDao().getAllNotes()
 //              set adapter
-                if(!notes.isNullOrEmpty()) {
-                    binding.recyclerViewNotes.adapter = NotesAdapter(notes as List<NoteAndCity>)
-                }
 
-                binding.add.setOnClickListener(View.OnClickListener {
-
-                val action=HomeFragmentDirections.actionAddNote()
-                Navigation.findNavController(it).navigate(action)
-                })
+//                binding.add.setOnClickListener(View.OnClickListener {
+//
+//                val action=HomeFragmentDirections.actionAddNote()
+//                Navigation.findNavController(it).navigate(action)
+//                })
             }
         }
+        binding.add.setOnClickListener(View.OnClickListener {
+
+            val action=HomeFragmentDirections.actionAddNote()
+            Navigation.findNavController(it).navigate(action)
+        })
     }
 }

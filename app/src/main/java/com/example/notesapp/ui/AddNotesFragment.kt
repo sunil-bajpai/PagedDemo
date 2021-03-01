@@ -15,17 +15,20 @@ import com.example.notesapp.R
 import com.example.notesapp.databinding.FragmentAddNotesBinding
 import com.example.notesapp.db.CityDao
 import com.example.notesapp.db.Note
+import com.example.notesapp.db.NoteAndCity
 import com.example.notesapp.db.NoteDatabase
 import com.example.notesapp.viewmodel.NoteViewModel
 import com.example.notesapp.viewmodel.NoteViewModelFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private lateinit var binding: FragmentAddNotesBinding
 private lateinit var viewModel: NoteViewModel
 
 class AddNotesFragment : BaseFragment() {
 
-    private var note:Note?=null
+    private var note:NoteAndCity?=null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,30 +62,30 @@ class AddNotesFragment : BaseFragment() {
             )
 
         viewModel =
-            ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
+            ViewModelProviders.of(this, noteViewModelFactory).get(NoteViewModel::class.java)
 
         //Update saved items
         arguments?.let {
-            note=AddNotesFragmentArgs.fromBundle(it).note
+            note = AddNotesFragmentArgs.fromBundle(it).note
             binding.editTextNote.setText(note?.note)
             binding.editTextTitle.setText(note?.title)
             binding.editCity.setText(note?.city)
         }
 
-        binding.btnSave.setOnClickListener(View.OnClickListener {view->
+        binding.btnSave.setOnClickListener(View.OnClickListener { view ->
 
-            val noteTitle= binding.editTextTitle.text.toString().trim()
-            val noteBody= binding.editTextNote.text.toString().trim()
-            val noteCity= binding.editCity.text.toString().trim()
+            val noteTitle = binding.editTextTitle.text.toString().trim()
+            val noteBody = binding.editTextNote.text.toString().trim()
+            val noteCity = binding.editCity.text.toString().trim()
 
-            if(noteTitle.isEmpty()){
-                binding.editTextTitle.error="Title Required!"
+            if (noteTitle.isEmpty()) {
+                binding.editTextTitle.error = "Title Required!"
                 binding.editTextTitle.requestFocus()
                 return@OnClickListener
             }
 
-            if(noteBody.isEmpty()){
-                binding.editTextNote.error="Please add content in note!"
+            if (noteBody.isEmpty()) {
+                binding.editTextNote.error = "Please add content in note!"
                 binding.editTextNote.requestFocus()
                 return@OnClickListener
             }
@@ -90,30 +93,28 @@ class AddNotesFragment : BaseFragment() {
             //using kotlin coroutines
 
             lifecycleScope.launch {
+                withContext(Dispatchers.Main) {
 
-                context?.let {
-                    val mNote= Note(noteTitle,noteBody,noteCity)
+                    context?.let {
+                        val mNote = Note(noteTitle, noteBody, noteCity)
 
-                    if(note==null){
+                        if (note == null) {
 //                        NoteDatabase(it).getNoteDao().addNote(mNote)
-                        viewModel.addNote(mNote)
-                        it.toast("Note Saved")
-                    }
-                    else{
-                        mNote.id=note!!.id
+                            viewModel.addNote(mNote)
+                            it.toast("Note Saved")
+                        } else {
+                            mNote.id = note!!.id
 //                        NoteDatabase(it).getNoteDao().updateNote(mNote)
-                        viewModel.updateNote(mNote)
-                        it.toast("Note Updated")
+                            viewModel.updateNote(mNote)
+                            it.toast("Note Updated")
+                        }
+
+                        val action = AddNotesFragmentDirections.actionSaveNotes()
+                        Navigation.findNavController(view).navigate(action)
                     }
-
-
-                    val action=AddNotesFragmentDirections.actionSaveNotes()
-                     Navigation.findNavController(view).navigate(action)
                 }
             }
         })
-
-
     }
 
     //menu item select

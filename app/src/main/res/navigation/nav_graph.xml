@@ -23,7 +23,7 @@
             android:id="@+id/actionSaveNotes"
             app:destination="@id/homeFragment" />
         <argument
-            app:argType="com.example.notesapp.db.Note"
+            app:argType="com.example.notesapp.db.NoteAndCity"
             android:name="Note"
             app:nullable="true"
             android:defaultValue="@null" />
