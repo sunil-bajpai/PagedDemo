@@ -23,11 +23,11 @@ class NotesAdapter(private val notes:List<NoteAndCity>):RecyclerView.Adapter<Not
         holder.myview.textViewNote.text=notes[position].note
         holder.myview.city.text=notes[position].city
         holder.myview.zip.text= notes[position].zip.toString()
-        holder.myview.root.setOnClickListener{
-            val action=HomeFragmentDirections.actionAddNote()
-            action.note=notes[position]
-            Navigation.findNavController(it).navigate(action)
-        }
+//        holder.myview.root.setOnClickListener{
+//            val action=HomeFragmentDirections.actionAddNote()
+//            action.note=notes[position]
+//            Navigation.findNavController(it).navigate(action)
+//        }
     }
 
     override fun getItemCount()=notes.size

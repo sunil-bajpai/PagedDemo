@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.notesapp.R
 import com.example.notesapp.databinding.FragmentHomeBinding
@@ -24,34 +25,32 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 
-private lateinit var binding:FragmentHomeBinding
+private lateinit var binding: FragmentHomeBinding
 private lateinit var viewModel: NoteViewModel
+private lateinit var adapter: PagedNoteAdapter
 
 class HomeFragment : BaseFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding =
-                DataBindingUtil.inflate<ViewDataBinding>(
-                        inflater,
-                        R.layout.fragment_home,
-                        container,
-                        false
-                ) as FragmentHomeBinding
-        val rootView = binding.getRoot()
-        return rootView
-        // Inflate the layout for this fragment
-//        return inflater.inflate(R.layout.fragment_home, container, false)
+            DataBindingUtil.inflate<ViewDataBinding>(
+                inflater,
+                R.layout.fragment_home,
+                container,
+                false
+            ) as FragmentHomeBinding
 
+        return binding.root
     }
 
     @InternalCoroutinesApi
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        binding.recyclerViewNotes.setHasFixedSize(true)
-        binding.recyclerViewNotes.layoutManager=StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL)
+        binding.recyclerViewNotes.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         val application = requireActivity().application
 
@@ -63,44 +62,27 @@ class HomeFragment : BaseFragment() {
             )
 
         viewModel =
-            ViewModelProviders.of(this,noteViewModelFactory).get(NoteViewModel::class.java)
+            ViewModelProviders.of(this, noteViewModelFactory).get(NoteViewModel::class.java)
 
-        viewModel.getAllNotes()
+//        viewModel.getAllNotes()
+
+        adapter = PagedNoteAdapter()
+        binding.recyclerViewNotes.adapter = adapter
+
         lifecycleScope.launchWhenStarted {
             withContext(Dispatchers.Main) {
 
-                viewModel.databaseResponse.collect()
+                viewModel.list.collect()
                 {
-                    when(it){
-                        is NoteViewModel.ResponseState.Success -> {
-                            Snackbar.make(binding.root, "Success", Snackbar.LENGTH_LONG).show()
-                            binding.recyclerViewNotes.adapter = NotesAdapter(it.data)
-                        }
-                        is NoteViewModel.ResponseState.Error -> {
-                            Snackbar.make(binding.root, "Error", Snackbar.LENGTH_LONG).show()
-                        }
-                        is NoteViewModel.ResponseState.Loading -> {
-                            Snackbar.make(binding.root, "Loading", Snackbar.LENGTH_LONG).show()
-                        }
-                    }
+                    Snackbar.make(binding.root, "Success", Snackbar.LENGTH_LONG).show()
+                    adapter.submitData(it)
+
                 }
-
-//                viewModel.getAllNotes()
-//                val notes= viewModel.result
-
-//              val notes=NoteDatabase(it).getNoteDao().getAllNotes()
-//              set adapter
-
-//                binding.add.setOnClickListener(View.OnClickListener {
-//
-//                val action=HomeFragmentDirections.actionAddNote()
-//                Navigation.findNavController(it).navigate(action)
-//                })
             }
         }
         binding.add.setOnClickListener(View.OnClickListener {
 
-            val action=HomeFragmentDirections.actionAddNote()
+            val action = HomeFragmentDirections.actionAddNote()
             Navigation.findNavController(it).navigate(action)
         })
     }

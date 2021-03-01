@@ -1,7 +1,9 @@
 package com.example.notesapp.db
 
 import androidx.paging.DataSource
+import androidx.paging.PageKeyedDataSource
 import androidx.paging.PagedList
+import androidx.paging.PagingSource
 import androidx.room.*
 
 @Dao
@@ -14,7 +16,7 @@ interface NoteDao {
     fun getAllNotes():List<NoteAndCity?>?
 
     @Query("SELECT Note.id,Note.title,Note.city,Note.note,City.zip FROM NOTE left Outer join City on Note.city=City.city ")
-    fun getAllNotesPaged(): DataSource.Factory<Int, NoteAndCity>
+    fun getAllNotesPaged(): PagingSource<Int, NoteAndCity>
 
     @Insert
     fun addMultipleNotes(vararg note: Note)
